@@ -1,4 +1,5 @@
 const Encore = require('@symfony/webpack-encore');
+const path = require('path');
 
 // Manually configure the runtime environment if not already configured yet by the "encore" command.
 // It's useful when you use tools that rely on webpack.config.js file.
@@ -7,6 +8,10 @@ if (!Encore.isRuntimeEnvironmentConfigured()) {
 }
 
 Encore
+    .configureDefinePlugin((options) => {
+        options.__VUE_OPTIONS_API__ = false
+        options.__VUE_PROD_DEVTOOLS__ = false
+    })
     // directory where compiled assets will be stored
     .setOutputPath('public/build/')
     // public path used by the web server to access the output path
@@ -20,10 +25,8 @@ Encore
      * Each entry will result in one JavaScript file (e.g. app.js)
      * and one CSS file (e.g. app.css) if your JavaScript imports CSS.
      */
-    .addEntry('app', './assets/app.js')
-
-    // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
-    .enableStimulusBridge('./assets/controllers.json')
+    .addEntry('app', './assets/src/main.js')
+    .addAliases({ '@': path.resolve('./assets/src/components/') })
 
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
     .splitEntryChunks()
@@ -56,7 +59,7 @@ Encore
     })
 
     // enables Sass/SCSS support
-    //.enableSassLoader()
+    .enableSassLoader()
 
     // uncomment if you use TypeScript
     //.enableTypeScriptLoader()
@@ -64,12 +67,14 @@ Encore
     // uncomment if you use React
     //.enableReactPreset()
 
+    .enableVueLoader(() => { }, { runtimeCompilerBuild: false })
+
     // uncomment to get integrity="..." attributes on your script & link tags
     // requires WebpackEncoreBundle 1.4 or higher
-    //.enableIntegrityHashes(Encore.isProduction())
+    .enableIntegrityHashes(Encore.isProduction())
 
     // uncomment if you're having problems with a jQuery plugin
     //.autoProvidejQuery()
-;
+    ;
 
 module.exports = Encore.getWebpackConfig();
