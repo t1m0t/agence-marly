@@ -6,9 +6,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Cookie;
-use Symfony\Component\Security\Csrf\CsrfTokenManager;
-use Carbon\Carbon;
+use App\Service\ForgeCookie;
+
 
 class MainController extends AbstractController
 {
@@ -28,16 +27,9 @@ class MainController extends AbstractController
     {
         $response = new Response();
         if ($request->cookies->get('X_CSRF_TOKEN') === null) {
-            $csrf_manager = new CsrfTokenManager();
-            $session = $request->getSession();
-            $session->set('X_CSRF_TOKEN', $csrf_manager->getToken('X_CSRF_TOKEN'));
-            $cookie = Cookie::create('X_CSRF_TOKEN')
-                ->withValue($session->get('X_CSRF_TOKEN'))
-                ->withExpires(strtotime(Carbon::now()->add(2, 'hour')))
-                ->withSameSite('strict')
-                ->withHttpOnly(true)
-                ->withSecure(true);
-            $response->headers->setCookie($cookie);
+
+            $cookie = new ForgeCookie($request);
+            $response->headers->setCookie($cookie->getCSRFCookie());
         }
 
         $view = $this->renderView('/base.html.twig', [
