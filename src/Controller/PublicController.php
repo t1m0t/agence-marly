@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Service\ForgeCookie;
 
 
-class MainController extends AbstractController
+class PublicController extends AbstractController
 {
     #[Route('/', methods: ["GET"])]
     #[Route('/senregistrer', methods: ["GET"])]
@@ -23,9 +23,20 @@ class MainController extends AbstractController
     #[Route('/senregistrer', methods: ["GET"])]
     #[Route('/mot-de-passe-oublie', methods: ["GET"])]
     #[Route('/biens', methods: ["GET"])]
-    public function index(Request $request): Response
+    public function indexPublic(Request $request): Response
     {
         $response = new Response();
+        $response = $this->checkCSRF($request, $response);
+
+        $view = $this->renderView('/base.html.twig', [
+            'controller_name' => 'PublicController'
+        ]);
+
+        return $response->setContent($view);
+    }
+
+    private function checkCSRF(Request $request, Response $response)
+    {
         if ($request->cookies->get('X_CSRF_TOKEN') === null) {
             $cookieDuration = [
                 'qty' => 2,
@@ -33,12 +44,9 @@ class MainController extends AbstractController
             ];
             $fc = new ForgeCookie($request, $cookieDuration);
             $response->headers->setCookie($fc->forgeCSRFCookie());
+
+            return $response;
         }
-
-        $view = $this->renderView('/base.html.twig', [
-            'controller_name' => 'MainController'
-        ]);
-
-        return $response->setContent($view);
+        return $response;
     }
 }

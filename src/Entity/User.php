@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -23,6 +25,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'string')]
     private $password;
+
+    #[ORM\OneToMany(mappedBy: 'responsable', targetEntity: Bien::class)]
+    private $biens;
+
+    public function __construct()
+    {
+        $this->biens = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -92,5 +102,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection<int, Bien>
+     */
+    public function getBiens(): Collection
+    {
+        return $this->biens;
+    }
+
+    public function addBien(Bien $bien): self
+    {
+        if (!$this->biens->contains($bien)) {
+            $this->biens[] = $bien;
+            $bien->setResponsable($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBien(Bien $bien): self
+    {
+        if ($this->biens->removeElement($bien)) {
+            // set the owning side to null (unless already changed)
+            if ($bien->getResponsable() === $this) {
+                $bien->setResponsable(null);
+            }
+        }
+
+        return $this;
     }
 }
