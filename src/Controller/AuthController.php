@@ -14,8 +14,8 @@ use Psr\Log\LoggerInterface;
 
 class AuthController extends AbstractController
 {
-    #[Route('/auth/login', name: 'app_auth_login_get', methods: ['GET'])]
-    public function getLogin(Request $request, LoggerInterface $logger): Response
+    #[Route('/auth/login/init', name: 'app_auth_login_init', methods: ['GET'])]
+    public function initLogin(Request $request, LoggerInterface $logger): RedirectResponse
     {
         // on vérifie si l'utilisateur possède déjà un auth token
         if ($request->cookies->get('X_AUTH_TOKEN') !== null) {
@@ -37,7 +37,7 @@ class AuthController extends AbstractController
     }
 
     #[Route('/auth/login', name: 'app_auth_login_post', methods: ['POST'])]
-    public function postLogin(#[CurrentUser] ?User $user, Request $request): Response
+    public function postLogin(#[CurrentUser] ?User $user, Request $request): Response|RedirectResponse
     {
         if (null === $user) {
             return $this->json([

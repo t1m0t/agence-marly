@@ -1,5 +1,5 @@
 const menuStartItems = [
-  { id: 1, values: { type: 'link', content: 'Qui sommes-nous ?', ref: '/qui-sommes-nous' } },
+  //{ id: 1, values: { type: 'link', content: 'Qui sommes-nous ?', ref: '/qui-sommes-nous' } },
   { id: 2, values: { type: 'link', content: 'Nos Biens', ref: '/nos-biens' } },
   {
     id: 3,

@@ -46,6 +46,7 @@
 </template>
 
 <script setup>
+import axios from "axios";
 import { onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import loginModel from "../../../models/auth/loginModel.js";
@@ -56,14 +57,14 @@ const authPopup = ui.authPopup
 const inputTextField = ui.inputTextField
 const router = useRouter();
 
-const dummyUser = {
-  email: "test@test.com",
-  password: "test",
+const testUser = {
+  email: "test1@example.com",
+  password: "password",
 };
 
 const login = loginModel;
-login.email.val = dummyUser.email;
-login.password.val = dummyUser.password;
+login.email.val = testUser.email;
+login.password.val = testUser.password;
 
 function resetErrors() {
   login.email.error.is = false;
@@ -73,17 +74,19 @@ const redirect = router.currentRoute.value.query.redirect;
 
 function submitForm() {
   resetErrors();
-  if (login.email.isValid()) {
-    if (
-      login.email.val === dummyUser.email &&
-      login.password.val == dummyUser.password
-    ) {
-      const payload = {
-        email: login.email.val,
-        password: login.password.val,
-        rememberMe: login.rememberMe.val,
-      };
+  if (login.email.isValid() && login.password !== null) {
+    const payload = {
+      username: login.email.val,
+      password: login.password.val,
+      rememberMe: login.rememberMe.val,
+    };
+    const res = axios.post('/auth/login', payload, {
+      headers: {
+        'content-type': 'application/json'
+      }
+    })
 
+    if (res !== false) {
       if (redirect !== undefined) {
         router.push(redirect);
       } else {

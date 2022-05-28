@@ -29,7 +29,7 @@ class MainController extends AbstractController
         if ($request->cookies->get('X_CSRF_TOKEN') === null) {
 
             $cookie = new ForgeCookie($request);
-            $response->headers->setCookie($cookie->getCSRFCookie());
+            $response->headers->setCookie($cookie->forgeCSRFCookie());
         }
 
         $view = $this->renderView('/base.html.twig', [

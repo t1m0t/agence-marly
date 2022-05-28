@@ -10,5 +10,7 @@ import NotloggedinNav from "./NotloggedinNav.vue";
 import { useCookie } from 'vue-cookie-next'
 
 const cookies = useCookie()
-const isLoggedIn = ref(cookies.getCookie('isLoggedIn') === true ? true : false)
+const isLoggedIn = ref(cookies.getCookie('X_AUTH_TOKEN') !== null ? true : false)
+
+watch(isLoggedIn, () => isLoggedIn.value = cookies.getCookie('X_AUTH_TOKEN'))
 </script>
