@@ -12,6 +12,7 @@
         "autoprefixer": "^9",
         "axios": "^0.24.0",
         "bulma": "^0.9.3",
+        "mitt": "^3.0.0",
         "node": "^17.7.2",
         "vue": "^3",
         "vue-axios": "^3.4.0",

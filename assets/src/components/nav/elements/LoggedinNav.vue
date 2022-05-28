@@ -3,31 +3,37 @@
     <div class="navbar-item">
       <div class="buttons">
         <routerLink to="/profile" class="button is-primary">
-          <strong>Profile</strong></routerLink
-        >
-        <routerLink
-          to="/"
-          class="button is-danger is-outlined"
-          @click.prevent="logout"
-          ><strong>Log out</strong></routerLink
-        >
+          <strong>Profile</strong>
+        </routerLink>
+        <routerLink to="/" class="button is-danger is-outlined" @click.prevent="logout"><strong>Se déconnecter</strong>
+        </routerLink>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import { useStore } from "vuex";
-export default {
-  setup() {
-    const store = useStore();
+<script setup>
+import { inject } from 'vue'
+import { useRouter } from "vue-router";
+import axios from "axios";
 
-    function logout() {
-      store.dispatch("user/logout");
-    }
-    return {
-      logout,
-    };
-  },
-};
+const emitter = inject('emitter')
+const router = useRouter();
+const emits = defineEmits(['logout'])
+
+const redirect = router.currentRoute.value.query.redirect;
+
+function execRedirect() {
+  emitter.emit('logged-in', false)
+  if (redirect !== undefined) {
+    router.push(redirect);
+  } else {
+    router.push("/");
+  }
+}
+
+async function logout() {
+  await axios.get('/auth/logout').then(execRedirect())
+}
+
 </script>

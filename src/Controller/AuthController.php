@@ -31,7 +31,11 @@ class AuthController extends AbstractController
                 new RedirectResponse('/connexion');
             }
         } else if ($request->cookies->get('X_CSRF_TOKEN') === null) {
-            $fc = new ForgeCookie($request);
+            $cookieDuration = [
+                'qty' => 2,
+                'unit' => 'hour'
+            ];
+            $fc = new ForgeCookie($request, $cookieDuration);
             return $fc->CSRFWithRedirect('/connexion');
         } else return new RedirectResponse('/connexion');
     }
@@ -44,8 +48,30 @@ class AuthController extends AbstractController
                 'message' => 'missing credentials',
             ], Response::HTTP_UNAUTHORIZED);
         } else {
-            $fc = new ForgeCookie($request);
+            $cookieDuration = [
+                'qty' => 2,
+                'unit' => 'hour'
+            ];
+            $fc = new ForgeCookie($request, $cookieDuration);
             return $fc->AuthCookieWithRedirect('/');
+        }
+    }
+
+    #[Route('/auth/logout', name: 'app_auth_logout', methods: ['GET'])]
+    public function logout(#[CurrentUser] ?User $user, Request $request): Response|RedirectResponse
+    {
+        if (null === $user) {
+            return $this->json([
+                'message' => 'not logged in',
+            ], Response::HTTP_UNAUTHORIZED);
+        } else {
+            $response = new RedirectResponse('/');
+            $session = $request->getSession();
+            $session->remove('X_AUTH_TOKEN');
+            $response->headers->clearCookie('X_AUTH_TOKEN');
+            $response->headers->clearCookie('IS_LOGGED_IN');
+
+            return $response;
         }
     }
 }

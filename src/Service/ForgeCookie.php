@@ -11,10 +11,15 @@ use Symfony\Component\Security\Csrf\CsrfTokenManager;
 class ForgeCookie
 {
     private $request = null;
+    private $cookieDuration = [
+        'qty' => 600,
+        'unit' => 'seconds'
+    ];
 
-    public function __construct(Request $request)
+    public function __construct(Request $request, array $cookieDuration)
     {
         $this->request = $request;
+        $this->cookieDuration = $cookieDuration;
     }
 
     public function CSRFWithRedirect(string $redirectURL): RedirectResponse
@@ -33,7 +38,7 @@ class ForgeCookie
         $session->set('X_CSRF_TOKEN', $csrf_manager->getToken('X_CSRF_TOKEN'));
         $cookie = Cookie::create('X_CSRF_TOKEN')
             ->withValue($session->get('X_CSRF_TOKEN'))
-            ->withExpires(strtotime(Carbon::now()->add(2, 'hour')))
+            ->withExpires(strtotime(Carbon::now()->add($this->cookieDuration['qty'], $this->cookieDuration['unit'])))
             ->withSameSite('strict')
             ->withHttpOnly(true)
             ->withSecure(true);
@@ -46,7 +51,7 @@ class ForgeCookie
         $session->set('X_AUTH_TOKEN', $this->randomString(128));
         $cookie = Cookie::create('X_AUTH_TOKEN')
             ->withValue($session->get('X_AUTH_TOKEN'))
-            ->withExpires(strtotime(Carbon::now()->add(1, 'hour')))
+            ->withExpires(strtotime(Carbon::now()->add($this->cookieDuration['qty'], $this->cookieDuration['unit'])))
             ->withSameSite('strict')
             ->withHttpOnly(true)
             ->withSecure(true);
@@ -57,7 +62,9 @@ class ForgeCookie
     {
         $response = new RedirectResponse($redirectURL);
         $cookie = $this->forgeAuthCookie();
+        $isLoggedInCookie = $this->forgeIsLoggedInCookie();
         $response->headers->setCookie($cookie);
+        $response->headers->setCookie($isLoggedInCookie);
         return $response;
     }
 
@@ -72,5 +79,16 @@ class ForgeCookie
         }
 
         return $randomString;
+    }
+
+    private function forgeIsLoggedInCookie()
+    {
+        $cookie = Cookie::create('IS_LOGGED_IN')
+            ->withValue(true)
+            ->withExpires(strtotime(Carbon::now()->add($this->cookieDuration['qty'], $this->cookieDuration['unit'])))
+            ->withSameSite('strict')
+            ->withHttpOnly(false)
+            ->withSecure(true);
+        return $cookie;
     }
 }
