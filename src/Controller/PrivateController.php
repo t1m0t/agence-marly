@@ -13,6 +13,8 @@ use Doctrine\Persistence\ManagerRegistry;
 class PrivateController extends AbstractController
 {
     #[Route('/gestion-biens', methods: ["GET"])]
+    #[Route('/gestion-utilisateurs', methods: ["GET"])]
+    #[Route('/profile', methods: ["GET"])]
     public function indexPrivate(Request $request): Response
     {
         $response = new Response();

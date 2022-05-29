@@ -2,7 +2,7 @@
   <div class="navbar-end">
     <div class="navbar-item">
       <div class="buttons">
-        <routerLink to="/profile" class="button is-primary">
+        <routerLink to="/app/profile" class="button is-primary">
           <strong>Profile</strong>
         </routerLink>
         <routerLink to="/" class="button is-danger is-outlined" @click.prevent="logout"><strong>Se déconnecter</strong>

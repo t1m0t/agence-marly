@@ -2,7 +2,7 @@ import helpers from '../helpers/index'
 
 const userRoutes = [
   {
-    path: '/profile',
+    path: '/app/profile',
     name: 'profile',
     component: helpers.dynImport('user', 'ProfilePage'),
     meta: {

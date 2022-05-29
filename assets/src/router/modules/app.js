@@ -2,15 +2,16 @@ import helpers from '../helpers/index'
 
 const appRoutes = [
   {
-    path: '/biens',
+    path: '/app/gestion-biens',
     name: 'biens',
     component: helpers.dynImport('app', 'Biens'),
     meta: {
       title: helpers.title('Nos Biens'),
       requiresAuth: true
     }
-  }, {
-    path: '/utilisateurs',
+  },
+  {
+    path: '/app/gestion-utilisateurs',
     name: 'utlisateurs',
     component: helpers.dynImport('app', 'Utilisateurs'),
     meta: {

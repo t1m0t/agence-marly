@@ -53,7 +53,7 @@ class AuthController extends AbstractController
                 'unit' => 'hour'
             ];
             $fc = new ForgeCookie($request, $cookieDuration);
-            return $fc->AuthCookieWithRedirect('/gestion-biens');
+            return $fc->AuthCookieWithRedirect('/app/gestion-biens');
         }
     }
 
