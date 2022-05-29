@@ -7,6 +7,7 @@ use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use App\Repository\BienRepository;
+use Carbon\Carbon;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 
 class BiensFixtures extends Fixture implements DependentFixtureInterface
@@ -24,8 +25,10 @@ class BiensFixtures extends Fixture implements DependentFixtureInterface
             $bien->setEstVendu(false);
             $bien->setTitre($this->randomWords(15, 30, 1));
             $bien->setDescription($this->randomWords(3, 10, 20));
-            $responsable = $manager->getRepository(User::class)->findAll()[0];
+            $responsable = $manager->getRepository(User::class)->findOneBy(['email' => 'test1@example.com']);
             $bien->setResponsable($responsable);
+            $bien->setDateCreation(Carbon::now());
+            $bien->setDateModification(Carbon::now());
             $manager->persist($bien);
         }
 

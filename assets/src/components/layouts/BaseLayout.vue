@@ -7,12 +7,21 @@
 
       <body>
         <BodyLayout>
-          <router-view></router-view>
+          <RouterView v-slot="{ Component }">
+            <template v-if="Component">
+              <Suspense>
+                <component :is="Component"></component>
+                <template #fallback>
+                  Loading...
+                </template>
+              </Suspense>
+            </template>
+          </RouterView>
         </BodyLayout>
       </body>
       <footer>
         <FooterLayout>
-          <router-view name=" footer">
+          <router-view name="footer">
           </router-view>
         </FooterLayout>
       </footer>

@@ -13,17 +13,13 @@ use Doctrine\Persistence\ManagerRegistry;
 class PrivateController extends AbstractController
 {
     #[Route('/gestion-biens', methods: ["GET"])]
-    public function indexPrivate(Request $request, ManagerRegistry $doctrine): Response
+    public function indexPrivate(Request $request): Response
     {
         $response = new Response();
         $response = $this->checkCSRF($request, $response);
 
-        $biens = $doctrine->getRepository(Biens::class)->findAll();
-
-
         $view = $this->renderView('/base.html.twig', [
-            'controller_name' => 'PublicController',
-            'biens' => $biens
+            'controller_name' => 'PrivateController',
         ]);
 
         return $response->setContent($view);

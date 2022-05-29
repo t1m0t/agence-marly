@@ -37,9 +37,15 @@ class Bien
     #[ORM\Column(type: 'text', nullable: true)]
     private $description;
 
-    #[ORM\ManyToOne(targetEntity: user::class, inversedBy: 'biens')]
+    #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     private $responsable;
+
+    #[ORM\Column(type: 'datetime', options: ['default' => "CURRENT_TIMESTAMP"])]
+    private $date_creation;
+
+    #[ORM\Column(type: 'datetime', options: ['default' => "CURRENT_TIMESTAMP"])]
+    private $date_modification;
 
     public function getId(): ?int
     {
@@ -150,6 +156,30 @@ class Bien
     public function setResponsable(?user $responsable): self
     {
         $this->responsable = $responsable;
+
+        return $this;
+    }
+
+    public function getDateCreation(): ?\DateTimeInterface
+    {
+        return $this->date_creation;
+    }
+
+    public function setDateCreation(\DateTimeInterface $date_creation): self
+    {
+        $this->date_creation = $date_creation;
+
+        return $this;
+    }
+
+    public function getDateModification(): ?\DateTimeInterface
+    {
+        return $this->date_modification;
+    }
+
+    public function setDateModification(\DateTimeInterface $date_modification): self
+    {
+        $this->date_modification = $date_modification;
 
         return $this;
     }
