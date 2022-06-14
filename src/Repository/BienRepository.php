@@ -80,11 +80,11 @@ class BienRepository extends ServiceEntityRepository
                 ->setParameter('surface', $surfaceMax);
         }
         if ($pieceMin !== null) {
-            $qb->andWhere('b.carrez <= :carrez')
+            $qb->andWhere('b.carrez >= :carrez')
                 ->setParameter('carrez', 'T' . $pieceMin);
         }
         if ($pieceMax !== null) {
-            $qb->andWhere('b.carrez >= :carrez')
+            $qb->andWhere('b.carrez <= :carrez')
                 ->setParameter('carrez', 'T' . $pieceMax);
         }
         if ($orderby !== null) {

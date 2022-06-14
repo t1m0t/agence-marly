@@ -13,6 +13,7 @@ framework:
         cookie_samesite: strict
         cookie_httponly: true
         storage_factory_id: session.storage.factory.native
+        name: 'X_AUTH_TOKEN'
 
     php_errors:
         log: true

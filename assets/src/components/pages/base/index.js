@@ -5,6 +5,7 @@ import AboutPage from './AboutPage.vue'
 import ContactPage from './ContactPage.vue'
 import ReportIssuePage from './ReportIssuePage.vue'
 //import QuiSommesNous from './QuiSommesNous.vue'
+import Bien from './Bien'
 
 const basePages = {
   AboutPage,
@@ -13,7 +14,8 @@ const basePages = {
   NotFoundPage,
   ReportIssuePage,
   NosBiens,
-  //  QuiSommesNous
+  //  QuiSommesNous,
+  Bien
 }
 
 export default basePages

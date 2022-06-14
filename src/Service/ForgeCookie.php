@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\User;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,11 +16,13 @@ class ForgeCookie
         'qty' => 600,
         'unit' => 'seconds'
     ];
+    private  $user;
 
-    public function __construct(Request $request, array $cookieDuration)
+    public function __construct(Request $request, array $cookieDuration, ?User $user = null)
     {
         $this->request = $request;
         $this->cookieDuration = $cookieDuration;
+        $this->user = $user;
     }
 
     public function CSRFWithRedirect(string $redirectURL): RedirectResponse
@@ -63,8 +66,10 @@ class ForgeCookie
         $response = new RedirectResponse($redirectURL);
         $cookie = $this->forgeAuthCookie();
         $isLoggedInCookie = $this->forgeIsLoggedInCookie();
+        $isAdminCookie = $this->forgeIsAdminCookie();
         $response->headers->setCookie($cookie);
         $response->headers->setCookie($isLoggedInCookie);
+        $response->headers->setCookie($isAdminCookie);
         return $response;
     }
 
@@ -85,6 +90,19 @@ class ForgeCookie
     {
         $cookie = Cookie::create('IS_LOGGED_IN')
             ->withValue(true)
+            ->withExpires(strtotime(Carbon::now()->add($this->cookieDuration['qty'], $this->cookieDuration['unit'])))
+            ->withSameSite('strict')
+            ->withHttpOnly(false)
+            ->withSecure(true);
+        return $cookie;
+    }
+
+    private function forgeIsAdminCookie()
+    {
+        $isAdmin = false;
+        if (in_array('ROLE_ADMIN', $this->user->getRoles())) $isAdmin = true;
+        $cookie = Cookie::create('IS_ADMIN')
+            ->withValue($isAdmin)
             ->withExpires(strtotime(Carbon::now()->add($this->cookieDuration['qty'], $this->cookieDuration['unit'])))
             ->withSameSite('strict')
             ->withHttpOnly(false)

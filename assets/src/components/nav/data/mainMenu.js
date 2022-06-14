@@ -1,4 +1,4 @@
-const menuStartItems = [
+const mainMenu = [
   { id: 1, values: { type: 'link', content: 'Nos Biens', ref: '/nos-biens' } },
   {
     id: 2,
@@ -21,4 +21,4 @@ const menuStartItems = [
   }
 ]
 
-export default menuStartItems
+export default mainMenu

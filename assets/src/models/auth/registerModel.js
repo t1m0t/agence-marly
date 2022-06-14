@@ -6,7 +6,11 @@ const registerModel = reactive({
   password: loginModel.password,
   passwordRepeat: loginModel.passwordRepeat,
   acceptTerms: loginModel.rememberMe,
-  state: loginModel.state
+  state: loginModel.state,
+  failed: {
+    is: false,
+    message: 'Echec de la création de l\'utilisateur'
+  }
 })
 
 // customization

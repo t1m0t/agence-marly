@@ -4,12 +4,14 @@ namespace App\Controller;
 
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use App\Service\ForgeCookie;
+use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 
 class AuthController extends AbstractController
@@ -52,26 +54,49 @@ class AuthController extends AbstractController
                 'qty' => 2,
                 'unit' => 'hour'
             ];
-            $fc = new ForgeCookie($request, $cookieDuration);
-            return $fc->AuthCookieWithRedirect('/app/gestion-biens');
+            $fc = new ForgeCookie($request, $cookieDuration, $user);
+            return $fc->AuthCookieWithRedirect('/');
         }
     }
 
     #[Route('/auth/logout', name: 'app_auth_logout', methods: ['GET'])]
-    public function logout(#[CurrentUser] ?User $user, Request $request): Response|RedirectResponse
+    public function logout(Request $request): Response|RedirectResponse
+    {
+        $response = new RedirectResponse('/');
+        $session = $request->getSession();
+        $session->remove('X_AUTH_TOKEN');
+        $response->headers->clearCookie('X_AUTH_TOKEN');
+        $response->headers->clearCookie('IS_LOGGED_IN');
+        $response->headers->clearCookie('IS_ADMIN');
+
+        return $response;
+    }
+
+
+    #[Route('/auth/register', name: 'app_auth_register_post', methods: ['POST'])]
+    public function register(#[CurrentUser] ?User $user, Request $request, UserPasswordHasherInterface $passwordHasher, ManagerRegistry $doctrine): Response|RedirectResponse
     {
         if (null === $user) {
-            return $this->json([
-                'message' => 'not logged in',
-            ], Response::HTTP_UNAUTHORIZED);
-        } else {
-            $response = new RedirectResponse('/');
-            $session = $request->getSession();
-            $session->remove('X_AUTH_TOKEN');
-            $response->headers->clearCookie('X_AUTH_TOKEN');
-            $response->headers->clearCookie('IS_LOGGED_IN');
+            $entityManager = $doctrine->getManager();
+            $data = json_decode($request->getContent());
+            $user = new User();
+            $user->setEmail($data->email);
+            $hashedPassword = $passwordHasher->hashPassword(
+                $user,
+                $data->password
+            );
+            $user->setPassword($hashedPassword);
+            $entityManager->persist($user);
+            $entityManager->flush();
 
-            return $response;
+            $cookieDuration = [
+                'qty' => 2,
+                'unit' => 'hour'
+            ];
+            $fc = new ForgeCookie($request, $cookieDuration);
+            return $fc->AuthCookieWithRedirect('/');
+        } else {
+            return new RedirectResponse('/');
         }
     }
 }

