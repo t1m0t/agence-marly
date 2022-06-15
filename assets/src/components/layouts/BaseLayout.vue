@@ -2,7 +2,7 @@
   <div class="columns is-mobile">
     <div class="column is-full">
       <header v-if="headerEnabled">
-        <HeaderLayout @logout="console.log('logout event')" @login="console.log('login event')"></HeaderLayout>
+        <HeaderLayout />
       </header>
 
       <body>

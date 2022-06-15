@@ -37,7 +37,6 @@ const isLoggedIn = ref(getIsLoggedIn())
 const isAdmin = ref(getIsAdmin())
 
 emitter.on('logged-in', data => {
-  console.log(data)
   isLoggedIn.value = data.isLoggedIn
   isAdmin.value = data.isAdmin
 })

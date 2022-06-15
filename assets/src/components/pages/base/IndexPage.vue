@@ -21,26 +21,5 @@
 </template>
 
 <script setup>
-import { inject } from 'vue'
 import GoogleMaps from '../../ui/GoogleMaps.vue'
-const axios = inject('axios')
-/* const liste = await axios.get('/biens/liste', {
-  headers: {
-    'cache-control': 'max-age=600',
-    'accept': 'application/json'
-  }
-})
-console.log(liste) */
-/* 
-const data = {
-  center: { lat: 51.093048, lng: 6.842120 },
-  markers: [
-    {
-      position: {
-        lat: 51.093048, lng: 6.842120
-      },
-    }
-    , // Along list of clusters
-  ]
-} */
 </script>
