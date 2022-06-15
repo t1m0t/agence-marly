@@ -23,7 +23,7 @@ const loginModel = reactive({
     error: reactive({
       is: ref(false),
       message: ref(
-        'Mot de passe incorrecte. Doit contenir au moins 10 caractères dont un caractère spécial [!@#$%^&*]'
+        'Mot de passe incorrecte. Doit contenir au moins 10 caractères dont un caractère spécial [!@#$%^&*_]'
       )
     }),
     isValid: function () {

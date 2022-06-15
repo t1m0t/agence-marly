@@ -1,9 +1,13 @@
-import Biens from './Biens.vue'
-import Utilisateurs from './Utilisateurs.vue'
+import GestionBiens from './GestionBiens.vue'
+import GestionUtilisateurs from './GestionBiens.vue'
+import PrendreRendezVous from './PrendreRendezVous.vue'
+import MesRendezVous from './MesRendezVous.vue'
 
 const appPages = {
-  Biens,
-  Utilisateurs
+  GestionBiens,
+  GestionUtilisateurs,
+  PrendreRendezVous,
+  MesRendezVous
 }
 
 export default appPages
