@@ -18,13 +18,12 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 
 const emitter = inject('emitter')
-const router = useRouter();
-const emits = defineEmits(['logout'])
+const router = useRouter()
 
 const redirect = router.currentRoute.value.query.redirect;
 
 function execRedirect() {
-  emitter.emit('logged-in', false)
+  emitter.emit('logged-in', { isLoggedIn: false, isAdmin: false })
   if (redirect !== undefined) {
     router.push(redirect);
   } else {

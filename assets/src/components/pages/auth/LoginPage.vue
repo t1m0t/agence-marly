@@ -51,7 +51,9 @@ import { onUnmounted, ref, inject } from "vue";
 import { useRouter } from "vue-router";
 import loginModel from "../../../models/auth/loginModel.js";
 import ui from "../../ui/index";
+import { useCookie } from 'vue-cookie-next'
 
+const cookies = useCookie()
 const emitter = inject('emitter')
 const authPopup = ui.authPopup
 const inputTextField = ui.inputTextField
@@ -81,16 +83,19 @@ function submitForm() {
       password: login.password.val,
       rememberMe: login.rememberMe.val,
     };
-    const res = axios.post('/auth/login', payload, {
+    axios.post('/auth/login', payload, {
       headers: {
         'content-type': 'application/json'
       }
-    }).catch(e => {
-      login.email.val = "";
-      login.password.val = "";
-      login.rememberMe.val = false;
-      login.state.error.is = true;
-    }).then(redirect())
+    }).then(() => {
+      redirect()
+    })
+      .catch(e => {
+        login.email.val = "";
+        login.password.val = "";
+        login.rememberMe.val = false;
+        login.state.error.is = true;
+      })
   } else {
     login.email.error.is = true;
     login.email.val = "";
@@ -98,12 +103,20 @@ function submitForm() {
 }
 
 function redirect() {
-  emitter.emit('logged-in', true)
+  emitter.emit('logged-in', { isLoggedIn: getIsLoggedIn(), isAdmin: getIsAdmin() })
   if (redirectVal !== undefined) {
     router.push(redirectVal);
   } else {
     router.push("/");
   }
+}
+
+function getIsLoggedIn() {
+  return cookies.getCookie('IS_LOGGED_IN') === '1' ? true : false
+}
+
+function getIsAdmin() {
+  return cookies.getCookie('IS_ADMIN') === '1' ? true : false
 }
 
 onUnmounted(() => {

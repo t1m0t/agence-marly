@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { provide, ref, watch, inject, onUpdated } from "vue";
+import { provide, ref, watch, inject } from "vue";
 
 import NavbarBrand from "./elements/NavbarBrand.vue";
 import NavbarStart from "./elements/NavbarStart.vue";
@@ -35,27 +35,25 @@ const activateMenu = ref(false);
 const display = ref("");
 const isLoggedIn = ref(getIsLoggedIn())
 const isAdmin = ref(getIsAdmin())
-emitter.on('logged-in', (is) => {
-  if (is) {
-    isLoggedIn.value = is
-    isAdmin.value = getIsAdmin()
-  }
-  else {
-    isLoggedIn.value = false
-    isAdmin.value = false
-  }
+
+emitter.on('logged-in', data => {
+  console.log(data)
+  isLoggedIn.value = data.isLoggedIn
+  isAdmin.value = data.isAdmin
 })
 
 provide('isLoggedIn', isLoggedIn)
 provide("activateMenu", activateMenu);
 
+
 function getIsLoggedIn() {
-  return cookies.getCookie('IS_LOGGED_IN') !== null && cookies.getCookie('IS_LOGGED_IN') === '1' ? true : false
+  return cookies.getCookie('IS_LOGGED_IN') === '1' ? true : false
 }
 
 function getIsAdmin() {
-  return cookies.getCookie('IS_ADMIN') !== null && cookies.getCookie('IS_ADMIN') === '1' ? true : false
+  return cookies.getCookie('IS_ADMIN') === '1' ? true : false
 }
+
 
 watch(activateMenu, (val) => {
   if (val === true) {
