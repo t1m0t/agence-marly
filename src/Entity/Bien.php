@@ -3,11 +3,17 @@
 namespace App\Entity;
 
 use App\Repository\BienRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BienRepository::class)]
 class Bien
 {
+    const TYPES = ['location', 'vente'];
+    const TYPES_BATI = ['maison', 'appartement'];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -17,12 +23,17 @@ class Bien
     private $adresse;
 
     #[ORM\Column(type: 'string')]
+    #[Assert\Choice(choices: Bien::TYPES, message: "Type d'offre invalide.")]
     private $type;
 
     #[ORM\Column(type: 'integer')]
+    #[Assert\GreaterThan(0)]
+    #[Assert\LessThan(99999999)]
     private $prix;
 
     #[ORM\Column(type: 'integer')]
+    #[Assert\GreaterThan(0)]
+    #[Assert\LessThan(99999999)]
     private $surface;
 
     #[ORM\Column(type: 'string', length: 2)]
@@ -46,6 +57,18 @@ class Bien
 
     #[ORM\Column(type: 'datetime', options: ['default' => "CURRENT_TIMESTAMP"])]
     private $date_modification;
+
+    #[ORM\OneToMany(mappedBy: 'bien', targetEntity: PhotoBien::class)]
+    private $photoBiens;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Assert\Choice(choices: Bien::TYPES_BATI, message: "Type de bâti invalide.")]
+    private $typeBien;
+
+    public function __construct()
+    {
+        $this->photoBiens = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -180,6 +203,48 @@ class Bien
     public function setDateModification(\DateTimeInterface $date_modification): self
     {
         $this->date_modification = $date_modification;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PhotoBien>
+     */
+    public function getPhotoBiens(): Collection
+    {
+        return $this->photoBiens;
+    }
+
+    public function addPhotoBien(PhotoBien $photoBien): self
+    {
+        if (!$this->photoBiens->contains($photoBien)) {
+            $this->photoBiens[] = $photoBien;
+            $photoBien->setBien($this);
+        }
+
+        return $this;
+    }
+
+    public function removePhotoBien(PhotoBien $photoBien): self
+    {
+        if ($this->photoBiens->removeElement($photoBien)) {
+            // set the owning side to null (unless already changed)
+            if ($photoBien->getBien() === $this) {
+                $photoBien->setBien(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getTypeBien(): ?string
+    {
+        return $this->typeBien;
+    }
+
+    public function setTypeBien(?string $typeBien): self
+    {
+        $this->typeBien = $typeBien;
 
         return $this;
     }

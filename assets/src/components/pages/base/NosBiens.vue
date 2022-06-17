@@ -13,7 +13,7 @@
         <div class="card-content">
           <div class="media">
             <div class="media-content">
-              <p class="title is-4">{{ bien.titre }}</p>
+              <p class="title is-4"><a :href="/bien/ + bien.id" target="_blank">{{ bien.titre }}</a></p>
               <p>Type : {{ bien.type }}</p>
               <p>Prix : {{ bien.prix }} €</p>
               <p>Carrez : {{ bien.carrez }}</p>

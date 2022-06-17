@@ -85,7 +85,7 @@ const rendezVousModel = reactive({
     state: {
         error: {
             is: false,
-            message: 'Impossible de se connecter, merci de réessayer.'
+            message: 'Echec de l\'enregistrement du rendez-vous.'
         }
     }
 })

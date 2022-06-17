@@ -36,6 +36,15 @@ const appRoutes = [
       title: helpers.title('Mes Rendez-Vous'),
       requiresAuth: true
     }
+  },
+  {
+    path: '/app/edit-bien/:id',
+    name: 'edit-bien',
+    component: helpers.dynImport('app', 'EditionBien'),
+    meta: {
+      title: helpers.title('Edition d\'un bien'),
+      requiresAuth: true
+    }
   }
 ]
 

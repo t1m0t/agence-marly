@@ -50,6 +50,14 @@ const baseRoutes = [
     }
   },
   {
+    path: '/bien/:id',
+    name: 'bien',
+    component: helpers.dynImport('base', 'Bien'),
+    meta: {
+      title: helpers.title('Biens')
+    }
+  },
+  {
     path: '/:NotFoundPage(.*)',
     component: helpers.dynImport('base', 'NotFoundPage'),
     meta: {

@@ -26,6 +26,18 @@ const validators = {
   minute: (val) => {
     const item = parseInt(val)
     return item >= 0 && item <= 60
+  },
+  prix: (val) => {
+    const item = parseInt(val)
+    return item >= 0 && item <= 99999999
+  },
+  surface: (val) => {
+    const item = parseInt(val)
+    return item >= 0 && item <= 99999999
+  },
+  carrez: (val) => {
+    const item = parseInt(val)
+    return item >= 0 && item <= 12
   }
 }
 

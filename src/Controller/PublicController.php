@@ -2,12 +2,14 @@
 
 namespace App\Controller;
 
+use App\Entity\Bien;
 use App\Repository\BienRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\ForgeCookie;
+use Doctrine\Persistence\ManagerRegistry;
 
 class PublicController extends AbstractController
 {
@@ -23,16 +25,25 @@ class PublicController extends AbstractController
     #[Route('/senregistrer', methods: ["GET"])]
     #[Route('/mot-de-passe-oublie', methods: ["GET"])]
     #[Route('/nos-biens', methods: ["GET"])]
+    #[Route('/bien/{id}', methods: ["GET"])]
     public function indexPublic(Request $request): Response
     {
         $response = new Response();
         $response = $this->checkCSRF($request, $response);
 
-        $view = $this->renderView('/base.html.twig', [
-            'controller_name' => 'PrivateController',
-        ]);
+        $view = $this->renderView('/base.html.twig');
 
         return $response->setContent($view);
+    }
+
+    #[Route('/api/bien/{id}', methods: ["GET"])]
+    public function getBien(int $id, ManagerRegistry $doctrine): Response
+    {
+        $bien = $doctrine->getRepository(Bien::class)->find($id);
+
+        return $this->json([
+            'data' => $bien,
+        ], Response::HTTP_ACCEPTED);
     }
 
     private function checkCSRF(Request $request, Response $response)
@@ -60,6 +71,7 @@ class PublicController extends AbstractController
         $results = [];
         foreach ($data as $val) {
             $results[] = [
+                'id' => $val->getId(),
                 'adresse' => $val->getAdresse(),
                 'type' => $val->getType(),
                 'prix' => $val->getPrix(),
