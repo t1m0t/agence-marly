@@ -123,7 +123,6 @@ const bienModel = reactive({
     },
     photo: {
         est_principale: false,
-        url: null,
         file: null,
         error: {
             is: false,

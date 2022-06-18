@@ -3,13 +3,19 @@
 namespace App\Controller;
 
 use App\Entity\Bien;
+use App\Entity\PhotoBien;
 use App\Repository\BienRepository;
+use App\Repository\PhotoBienRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\ForgeCookie;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 class PublicController extends AbstractController
 {
@@ -40,10 +46,12 @@ class PublicController extends AbstractController
     public function getBien(int $id, ManagerRegistry $doctrine): Response
     {
         $bien = $doctrine->getRepository(Bien::class)->find($id);
+        $photos = $doctrine->getRepository(PhotoBien::class)->findBy(['bien_id' => $id]);
 
         return $this->json([
             'data' => $bien,
-        ], Response::HTTP_ACCEPTED);
+            'photos' => $photos
+        ], Response::HTTP_ACCEPTED, [], ['groups' => 'bien']);
     }
 
     private function checkCSRF(Request $request, Response $response)
@@ -82,7 +90,8 @@ class PublicController extends AbstractController
                 'description' => $val->getDescription(),
                 'date_creation' => $val->getDateCreation(),
                 'date_modification' => $val->getDateModification(),
-                'reponsable' => $val->getResponsable()->getEmail()
+                'reponsable' => $val->getResponsable()->getEmail(),
+                'photo' => $val->getPhotoBiens()
             ];
         }
         $paginationData = [

@@ -6,6 +6,8 @@ use App\Repository\BienRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BienRepository::class)]
@@ -14,53 +16,67 @@ class Bien
     const TYPES = ['location', 'vente'];
     const TYPES_BATI = ['maison', 'appartement'];
 
+    #[Groups('bien')]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    #[Groups('bien')]
     #[ORM\Column(type: 'string', length: 255)]
     private $adresse;
 
+    #[Groups('bien')]
     #[ORM\Column(type: 'string')]
     #[Assert\Choice(choices: Bien::TYPES, message: "Type d'offre invalide.")]
     private $type;
 
+    #[Groups('bien')]
     #[ORM\Column(type: 'integer')]
     #[Assert\GreaterThan(0)]
     #[Assert\LessThan(99999999)]
     private $prix;
 
+    #[Groups('bien')]
     #[ORM\Column(type: 'integer')]
     #[Assert\GreaterThan(0)]
     #[Assert\LessThan(99999999)]
     private $surface;
 
+    #[Groups('bien')]
     #[ORM\Column(type: 'string', length: 2)]
     private $carrez;
 
+    #[Groups('bien')]
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private $est_vendu;
 
+    #[Groups('bien')]
     #[ORM\Column(type: 'string', length: 255)]
     private $titre;
 
+    #[Groups('bien')]
     #[ORM\Column(type: 'text', nullable: true)]
     private $description;
 
+    #[Groups('bienResponsable')]
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     private $responsable;
 
+    #[Groups('bien')]
     #[ORM\Column(type: 'datetime', options: ['default' => "CURRENT_TIMESTAMP"])]
     private $date_creation;
 
+    #[Groups('bien')]
     #[ORM\Column(type: 'datetime', options: ['default' => "CURRENT_TIMESTAMP"])]
     private $date_modification;
 
+    #[Groups('photoBiens')]
     #[ORM\OneToMany(mappedBy: 'bien', targetEntity: PhotoBien::class)]
     private $photoBiens;
 
+    #[Groups('bien')]
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Assert\Choice(choices: Bien::TYPES_BATI, message: "Type de bâti invalide.")]
     private $typeBien;

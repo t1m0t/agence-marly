@@ -101,4 +101,10 @@ class BienRepository extends ServiceEntityRepository
             'maxResult' => count($qbForCount->getQuery()->getResult())
         ];
     }
+
+    public function getBien($id): mixed
+    {
+        $qb = $this->createQueryBuilder('b');
+        return $qb->where('b.id = :id')->setParameter('id', $id)->getQuery()->getResult();
+    }
 }

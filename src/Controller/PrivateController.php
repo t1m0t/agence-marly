@@ -16,7 +16,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/app', name: '_app')]
@@ -121,12 +123,10 @@ class PrivateController extends AbstractController
     #[Route('/edit-bien/{id}', methods: ["POST"])]
     public function postEditBien(int $id, ManagerRegistry $doctrine, Request $request, ValidatorInterface $validator): Response
     {
-        dd($request->getContent());
         try {
             $content = $request->request->all();
             $em =  $doctrine->getManager();
             $bien = $doctrine->getRepository(Bien::class)->find($id);
-            dd($request->getContent());
             if ($content['adresse'] !== null) $bien->setAdresse($content['adresse']);
             if ($content['type'] !== null) $bien->setType($content['type']);
             if ($content['prix'] !== null) $bien->setPrix($content['prix']);
@@ -137,16 +137,16 @@ class PrivateController extends AbstractController
             if ($content['description'] !== null) $bien->setDescription($content['description']);
             if ($content['typeBien'] !== null) $bien->setTypeBien($content['typeBien']);
             if ($content['estVendu'] !== null) $bien->setEstVendu($content['estVendu'] === 'Oui' ? true : false);
-            if ($content['photosBien'] !== null) {
+            /* if ($content['photosBien'] !== null) {
                 foreach ($content['photosBien'] as $photo) {
                     $newPhoto = new PhotoBien();
                     if ($photo->est_principale === true) $newPhoto->setEstPrincipale(true);
                     $file = new UploadedBase64File($photo->file, 'test');
                     dd($file);
-                    /* $file = $photo->file;
-                        $photo->setFileName() */
+                    $file = $photo->file;
+                    $photo->setFileName() 
                 }
-            }
+            } */
 
             $errors = $validator->validate($bien);
             if (count($errors) > 0) {
@@ -167,5 +167,44 @@ class PrivateController extends AbstractController
                 'erreur' => $e
             ], Response::HTTP_SERVICE_UNAVAILABLE);
         }
+    }
+
+    #[Route('/ajouter-photo/{id}', methods: ["POST"])]
+    public function ajouterPhoto(int $id, ManagerRegistry $doctrine, Request $request, SluggerInterface $slugger)
+    {
+        try {
+            $image = $request->files->get('photo');
+            $originalFilename = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename);
+            $newFilename = $safeFilename . '-' . uniqid() . '.' . $image->guessExtension();
+            $image->move(
+                $this->getParameter('images_directory'),
+                $newFilename
+            );
+            $em =  $doctrine->getManager();
+            $bien = $doctrine->getRepository(Bien::class)->find($id);
+            $photoBien = new PhotoBien();
+            $photoBien->setBien($bien);
+            $photoBien->setFileName($newFilename);
+            $em->persist($photoBien);
+            $em->flush();
+
+            $photoBien = $doctrine->getRepository(Bien::class)->find($photoBien->getId());
+
+            return $this->json([
+                'message' => 'Image ajoutée avec succés',
+                'photoBien' => $photoBien
+            ], Response::HTTP_CREATED, [], ['groups' => 'photoBien', 'bien']);
+        } catch (FileException $e) {
+            return $this->json([
+                'message' => 'Echec de l\'ajout de l\'image',
+                'erreur' => $e
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+    }
+
+    #[Route('/supprimer-photo/{id}', methods: ["POST"])]
+    public function supprimerPhoto(int $id)
+    {
     }
 }

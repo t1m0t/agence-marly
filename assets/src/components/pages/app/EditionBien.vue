@@ -34,11 +34,6 @@
                                 :className="fields.carrez.className" v-model="fields.carrez.val" />
                         </div>
                         <div class="control">
-                            <label class="label">{{ fields.prix.label }}</label>
-                            <inputTextField :placeholder="fields.prix.placeholder" :type="fields.prix.inputType"
-                                :className="fields.prix.className" v-model="fields.prix.val" />
-                        </div>
-                        <div class="control">
                             <label class="label">{{ fields.est_vendu.label }}</label>
                             <dropdownSelect :items="fields.est_vendu.items" v-model="fields.est_vendu.val"
                                 :startValue="fields.est_vendu.val" class="select" />
@@ -67,19 +62,28 @@
                     </div>
                     <div class="field">
                         <label class="label">{{ fields.photos_bien.label }}</label>
-                        <div class="control inline-flex" v-for="(_, index) in fields.photos_bien.val">
-                            <img ref="photosRefs">
+                        <div v-if="fields.photos_bien.val.length > 0">
+                            <div class="liste-photo" v-for="(photo, index) in fields.photos_bien.val">
+                                <img :src="'/images/' + photo.fileName" alt="" ref="photosRefs">
+                                <button @click.prevent="supprimerPhoto(index)" v-if="photo.url !== null"
+                                    class="button is-danger">Supprimer</button>
+                            </div>
+                        </div>
+
+                        <div class="control inline-flex">
+                            <img ref="photoAajouter">
                             <div class="file is-primary">
                                 <label class="file-label">
-                                    <input class="file-input" type="file" name="photo" @input="setPhoto($event, index)">
-                                    <span class="file-cta">
-                                        <span class="file-label is-primary">
+                                    <input class="file-input" type="file" name="photo" @input="setPhoto($event)">
+                                    <button v-if="photo.file !== null" class="button is-primary"
+                                        @click.prevent="envoyerImage()">Envoyer</button>
+                                    <button v-if="photo.file !== null" class="button is-danger"
+                                        @click.prevent="deleteImage()">Supprimer</button>
+                                    <span v-else class="file-cta">
+                                        <span class="file-label is-info">
                                             Ajouter
                                         </span>
                                     </span>
-                                    <button
-                                        v-if="fields.photos_bien.val[index].file !== null || fields.photos_bien.val[index].url !== null"
-                                        class="button is-danger" @click.prevent="deleteImage(index)">Supprimer</button>
                                 </label>
                             </div>
                         </div>
@@ -108,25 +112,29 @@ const router = useRouter()
 const inputTextField = ui.inputTextField
 const errPopup = ui.errPopup
 const fields = bienModel.fields
+const photoModel = bienModel.photo
+let photo = bienModel.photo
 const error = reactive({
     is: false,
     message: null
 })
 const feed = ref(null)
 const photosRefs = ref([])
+const photoAajouter = ref(null)
 
 onBeforeMount(async () => {
     await setFeedData()
-    if (fields.photos_bien.val.length === 0) fields.photos_bien.val = [bienModel.photo]
-    fields.adresse.val = feed.value.adresse
-    fields.carrez.val = getCarrez(feed.value.carrez)
-    fields.description.val = feed.value.description
-    fields.est_vendu.val = feed.value.estVendu
-    fields.prix.val = feed.value.prix
-    fields.surface.val = feed.value.surface
-    fields.titre.val = feed.value.titre
-    fields.type.val = feed.value.type
-    fields.type_bien.val = feed.value.typeBien
+    console.log(feed.value)
+    fields.photos_bien.val = feed.value.photos
+    fields.adresse.val = feed.value.data.adresse
+    fields.carrez.val = getCarrez(feed.value.data.carrez)
+    fields.description.val = feed.value.data.description
+    fields.est_vendu.val = feed.value.data.estVendu
+    fields.prix.val = feed.value.data.prix
+    fields.surface.val = feed.value.data.surface
+    fields.titre.val = feed.value.data.titre
+    fields.type.val = feed.value.data.type
+    fields.type_bien.val = feed.value.data.typeBien
 })
 
 function getCarrez(carrez) {
@@ -134,28 +142,16 @@ function getCarrez(carrez) {
     return res[1]
 }
 
-function deleteImage(index) {
-    fields.photos_bien.val.splice(index, 1)
-    photosRefs.value.splice(index, 1)
-}
-
-onUpdated(
-    () => {
-        if (fields.photos_bien.val.length === 0) fields.photos_bien.val = [bienModel.photo]
-    }
-)
-
 async function setFeedData() {
     const reponse = await axios.get('/api/bien/' + route.params.id)
-    feed.value = reponse.data.data
+    feed.value = reponse.data
+    console.log(reponse.data)
 }
 
-async function setPhoto(e, index) {
-    const file = e.target.files[0]
-    const content = await new Response(file).text()
-    fields.photos_bien.val[index].file = { name: file.name, mime: file.type, content, original: file }
-    await getImage(index)
-    fields.photos_bien.val.push(bienModel.photo)
+async function deleteImage() {
+    photoAajouter.value.setAttribute('src', '')
+    photo = photoModel
+    photo.file = null
 }
 
 async function submit() {
@@ -173,17 +169,6 @@ async function submit() {
         //photosBien: fields.photos_bien.val
     };
 
-    for (const file in fields.photos_bien.val) {
-        const formData = new FormData();
-        const blob = new Blob(file.content, { type: file.mime })
-        formData.append(item, blob, file.name)
-        await axios.post('/app/edit-bien/' + route.params.id, payload, {
-            headers: {
-                'content-type': 'multipart/form-data'
-            }
-        })
-    }
-
     if (error.is === false) {
         const res = await axios.post('/app/edit-bien/' + route.params.id, payload, {
             headers: {
@@ -199,11 +184,50 @@ async function submit() {
     }
 }
 
-async function getImage(index) {
-    if (fields.photos_bien.val[index].url !== null) photosRefs.value[index].src = fields.photos_bien.val[index].url
-    else if (fields.photos_bien.val[index].file !== null) {
-        photosRefs.value[index].src = await readURL(fields.photos_bien.val[index].file.original)
+async function envoyerImage() {
+    const formData = new FormData();
+    formData.append('photo', photo.file.original)
+    try {
+        await axios.post('/app/ajouter-photo/' + route.params.id, formData, {
+            headers: {
+                'content-type': 'multipart/form-data'
+            }
+        })
+        photo = photoModel
+    } catch (e) {
+        console.log(e)
+        error.is = true
+        error.message = "Echec de l\'envoi de la photo."
     }
+}
+
+async function supprimerPhoto(index) {
+    try {
+        await axios.post('/app/supprimer-photo/', {
+            photo: fields.photos_bien.val[index]
+        }, {
+            headers: {
+                'content-type': 'application/json'
+            }
+        })
+        fields.photos_bien.val.splice(index, 1)
+        photosRefs.value[index].remove()
+    } catch (e) {
+        console.log(e)
+        error.is = true
+        error.message = "Echec de suppressionde la photo."
+    }
+}
+
+async function setPhoto(e) {
+    const file = e.target.files[0]
+    const content = await new Response(file).text()
+    photo.file = { name: file.name, mime: file.type, content, original: file }
+    await getImage()
+}
+
+async function getImage() {
+    photoAajouter.value.src = await readURL(photo.file.original)
 }
 
 function readURL(file) {

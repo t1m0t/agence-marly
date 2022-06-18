@@ -4,21 +4,29 @@ namespace App\Entity;
 
 use App\Repository\PhotoBienRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: PhotoBienRepository::class)]
 class PhotoBien
 {
+    #[Groups('bien')]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    #[Groups('bien')]
     #[ORM\Column(type: 'string', length: 255)]
     private $fileName;
 
     #[ORM\ManyToOne(targetEntity: Bien::class, inversedBy: 'photoBiens')]
     private $bien;
 
+    #[ORM\Column(type: 'integer')]
+    private $bien_id;
+
+    #[Groups('bien')]
     #[ORM\Column(type: 'boolean', nullable: true)]
     private $estPrincipale;
 
