@@ -102,6 +102,6 @@ class PublicController extends AbstractController
         return $this->json([
             'data' => $results,
             'pagination' => $paginationData
-        ], Response::HTTP_ACCEPTED);
+        ], Response::HTTP_ACCEPTED, [], ['groups' => 'bien']);
     }
 }
