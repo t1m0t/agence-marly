@@ -1,5 +1,6 @@
 <template>
   <div class="section">
+    <button class="button is-success" @click.prevent="handleAjouterBien">Ajouter un bien</button>
     <h1 class="title">Gestion des Biens</h1>
     <div class="table-container">
       <table class="table is-narrow">
@@ -30,5 +31,9 @@ const columns = Object.keys(listBiens.data.data[0])
 
 function editBien(bienId) {
   router.push('/app/edit-bien/' + bienId);
+}
+
+function handleAjouterBien() {
+  router.push('/app/ajout-bien');
 }
 </script>

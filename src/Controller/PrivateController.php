@@ -31,6 +31,7 @@ class PrivateController extends AbstractController
     #[Route('/prendre-rendez-vous', methods: ["GET"])]
     #[Route('/mes-rendez-vous', methods: ["GET"])]
     #[Route('/edit-bien/{id}', methods: ["GET"])]
+    #[Route('/ajout-bien', methods: ["GET"])]
     public function indexPrivate(Request $request): Response
     {
         $response = new Response();
@@ -126,7 +127,6 @@ class PrivateController extends AbstractController
     {
         try {
             $content = json_decode($request->getContent());
-            dd($content);
             $em =  $doctrine->getManager();
             $bien = $doctrine->getRepository(Bien::class)->find($id);
             if ($content->adresse !== null) $bien->setAdresse($content->adresse);
@@ -159,6 +159,43 @@ class PrivateController extends AbstractController
                 $em->persist($bien);
                 $em->flush();
                 return new RedirectResponse('/api/bien/' . $id);
+            }
+        } catch (Exception $e) {
+            return $this->json([
+                'message' => 'échec de l\'enregistrement du bien',
+                'erreur' => $e
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+    }
+
+    #[Route('/ajout-bien/', methods: ["POST"])]
+    public function postAjoutBien(int $id, ManagerRegistry $doctrine, Request $request, ValidatorInterface $validator): Response
+    {
+        try {
+            $content = json_decode($request->getContent());
+            $em =  $doctrine->getManager();
+            $bien = new Bien();
+            $bien->setAdresse($content->adresse);
+            $bien->setType($content->type);
+            $bien->setPrix($content->prix);
+            $bien->setSurface($content->surface);
+            $bien->setCarrez($content->carrez);
+            $bien->setTitre($content->titre);
+            $bien->setDescription($content->description);
+            $bien->setType($content->typeBien);
+            $bien->setTypeBati($content->typeBati);
+            $bien->setEstVendu($content->estVendu === 'Oui' ? true : false);
+
+            $errors = $validator->validate($bien);
+            if (count($errors) > 0) {
+                return $this->json([
+                    'message' => 'erreur de validation du bien',
+                    'error' => $errors
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            } else {
+                $em->persist($bien);
+                $em->flush();
+                return new RedirectResponse('/gestion-biens');
             }
         } catch (Exception $e) {
             return $this->json([

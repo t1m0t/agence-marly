@@ -29,20 +29,20 @@ const appRoutes = [
     }
   },
   {
-    path: '/app/mes-rendez-vous',
-    name: 'mes-rendez-vous',
-    component: helpers.dynImport('app', 'MesRendezVous'),
-    meta: {
-      title: helpers.title('Mes Rendez-Vous'),
-      requiresAuth: true
-    }
-  },
-  {
     path: '/app/edit-bien/:id',
     name: 'edit-bien',
     component: helpers.dynImport('app', 'EditionBien'),
     meta: {
       title: helpers.title('Edition d\'un bien'),
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/app/ajout-bien/',
+    name: 'ajout-bien',
+    component: helpers.dynImport('app', 'AjouterBien'),
+    meta: {
+      title: helpers.title('Ajout d\'un bien'),
       requiresAuth: true
     }
   }

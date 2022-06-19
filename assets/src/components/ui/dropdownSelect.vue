@@ -19,21 +19,23 @@ const defaultSelect = ref(props.defaultSelectText)
 const selectRefs = ref([])
 const noSelect = ref(null)
 
-if (defaultSelect.value === undefined) defaultSelect.value = '-- Selection --'
-
 function onChanged(e) {
   emits("update:modelValue", e.target.value)
 }
 
 onMounted(() => {
-  if (props.startValue !== undefined) {
+  console.log(props.startValue, props.items)
+  if (props.startValue !== null) {
     for (let i = 0; i < props.items.length; i++) {
       if (props.startValue === props.items[i]) {
         selectRefs.value[i].selected = true
         break
       }
     }
-  } else noSelect.value.selected = true
+  } else {
+    defaultSelect.value = '-- Selection --'
+    noSelect.value.selected = true
+  }
 })
 
 </script>
