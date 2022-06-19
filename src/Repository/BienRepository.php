@@ -54,6 +54,8 @@ class BienRepository extends ServiceEntityRepository
         (int)$surfaceMax = $request->query->get('smax') ?? null;
         (int)$pieceMin = $request->query->get('pimin') ?? null;
         (int)$pieceMax = $request->query->get('pimax') ?? null;
+        $typeBien = $request->query->get('tbien') ?? null;
+        $typeBati = $request->query->get('tbati') ?? null;
 
         (string)$orderby = $request->query->get('ob') ?? null;
         (string)$order = $request->query->get('or') ?? null;
@@ -86,6 +88,14 @@ class BienRepository extends ServiceEntityRepository
         if ($pieceMax !== null) {
             $qb->andWhere('b.carrez <= :carrez')
                 ->setParameter('carrez', 'T' . $pieceMax);
+        }
+        if ($typeBien !== null) {
+            $qb->andWhere('b.type = :type')
+                ->setParameter('type', $typeBien);
+        }
+        if ($typeBati !== null) {
+            $qb->andWhere('b.typeBien = :type')
+                ->setParameter('type', $typeBati);
         }
         if ($orderby !== null) {
             $qb->orderby('b.' . $orderby, $order);

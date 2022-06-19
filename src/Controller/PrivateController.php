@@ -126,6 +126,7 @@ class PrivateController extends AbstractController
     {
         try {
             $content = json_decode($request->getContent());
+            dd($content);
             $em =  $doctrine->getManager();
             $bien = $doctrine->getRepository(Bien::class)->find($id);
             if ($content->adresse !== null) $bien->setAdresse($content->adresse);
@@ -135,13 +136,13 @@ class PrivateController extends AbstractController
             if ($content->carrez !== null) $bien->setCarrez($content->carrez);
             if ($content->titre !== null) $bien->setTitre($content->titre);
             if ($content->description !== null) $bien->setDescription($content->description);
-            if ($content->typeBien !== null) $bien->setTypeBien($content->typeBien);
+            if ($content->typeBien !== null) $bien->setType($content->typeBien);
+            if ($content->typeBati !== null) $bien->setTypeBien($content->typeBati);
             if ($content->estVendu !== null) $bien->setEstVendu($content->estVendu === 'Oui' ? true : false);
             if ($content->photosBien !== null) {
                 foreach ($content->photosBien as $photo) {
                     $editPhoto = $doctrine->getRepository(PhotoBien::class)->find($photo->id);
-                    dd($editPhoto);
-                    if ($photo->est_principale === true) $editPhoto->setEstPrincipale(true);
+                    if ($photo->estPrincipale === true) $editPhoto->setEstPrincipale(true);
                     else $editPhoto->setEstPrincipale(false);
                     $em->persist($editPhoto);
                     $em->flush();

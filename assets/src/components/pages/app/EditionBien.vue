@@ -152,7 +152,6 @@ async function setFeedData() {
     fields.titre.val = feed.value.data.titre
     fields.type.val = feed.value.data.type
     fields.type_bien.val = feed.value.data.typeBien
-    console.log(fields.photos_bien.val)
 }
 
 async function deleteImage() {

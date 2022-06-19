@@ -1,13 +1,14 @@
 <template>
   <div class="container">
     <h1 class="title">Voici nos biens disponibles</h1>
-    <RechercheBiens @chercher="handleChercher" />
+    <RechercheBiens @chercher="handleChercher" :typeBien="listBiens.data.type_bien"
+      :typeBati="listBiens.data.type_bati" />
     <Pagination :data="listBiens.data.pagination" @goToPage="handleGoToPage" />
     <div class="flex-container">
       <div v-for="bien in listBiens.data.data" class="card in-flex-list">
         <div class="card-image">
           <figure class="image is-4by3">
-            <img src="https://bulma.io/images/placeholders/128x128.png" alt="Placeholder image">
+            <img :src="getPhotoPrincipale(bien)" alt="Placeholder image">
           </figure>
         </div>
         <div class="card-content">
@@ -25,7 +26,6 @@
             <p><time>Créé le {{ new Date(bien.date_creation).toLocaleString() }}</time></p>
             <p><time>Mis à jour le {{ new Date(bien.date_modification).toLocaleString() }}</time></p>
           </div>
-
         </div>
       </div>
     </div>
@@ -48,7 +48,8 @@ const recherche = reactive({
     surfaceMax: null,
     prixMin: null,
     prixMax: null,
-    pageNumber: null
+    typeBien: null,
+    typeBati: null
   }
 })
 
@@ -59,7 +60,9 @@ const queryMapping = {
   surfaceMax: 'smax',
   piecesMin: 'pimin',
   picesMax: 'pimax',
-  pageNumber: 'page'
+  pageNumber: 'page',
+  typeBien: 'tbien',
+  typeBati: 'tbati'
 }
 
 const listBiens = ref(await axios.get('/liste-biens'))
@@ -73,7 +76,16 @@ function handleGoToPage(pageNumber) {
 function handleChercher(data) {
   recherche.data = data
   const query = getQuery()
+  console.log(query)
   getListeBien(query)
+}
+
+function getPhotoPrincipale(bien) {
+  let res = ''
+  bien.photo.forEach(el => {
+    if (el.estPrincipale === true) res = '/images/' + el.fileName
+  })
+  return res
 }
 
 function getListeBien(query) {
@@ -91,6 +103,12 @@ function getQuery() {
   const keysRecherche = Object.keys(recherche.data)
   keysRecherche.forEach(el => {
     if (recherche.data[el] > 0) {
+      const newQ = queryMapping[el] + '=' + recherche.data[el] + '&'
+      query += newQ
+    } else if (el === 'typeBien' && recherche.data[el] !== null) {
+      const newQ = queryMapping[el] + '=' + recherche.data[el] + '&'
+      query += newQ
+    } else if (el === 'typeBati' && recherche.data[el] !== null) {
       const newQ = queryMapping[el] + '=' + recherche.data[el] + '&'
       query += newQ
     }

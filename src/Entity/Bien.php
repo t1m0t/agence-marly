@@ -79,7 +79,7 @@ class Bien
     #[Groups('bien')]
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Assert\Choice(choices: Bien::TYPES_BATI, message: "Type de bâti invalide.")]
-    private $typeBien;
+    private $typeBati;
 
     public function __construct()
     {
@@ -253,14 +253,14 @@ class Bien
         return $this;
     }
 
-    public function getTypeBien(): ?string
+    public function getTypeBati(): ?string
     {
-        return $this->typeBien;
+        return $this->typeBati;
     }
 
-    public function setTypeBien(?string $typeBien): self
+    public function setTypeBati(?string $typeBati): self
     {
-        $this->typeBien = $typeBien;
+        $this->typeBati = $typeBati;
 
         return $this;
     }

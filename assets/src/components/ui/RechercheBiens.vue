@@ -22,12 +22,23 @@
             <button class="button is-info" @click.prevent="chercher">Chercher</button>
         </div>
     </div>
+    <div class="field">
+        <div class="control">
+            <label class="label">Type de bien</label>
+            <dropdownSelect :items="typeBien" v-model="rechercheData.typeBien" class="select" />
+        </div>
+        <div class="control">
+            <label class="label">Type de bâti</label>
+            <dropdownSelect :items="typeBati" v-model="rechercheData.typeBati" class=" select" />
+        </div>
+    </div>
 </template>
 
 <script setup>
 import { reactive } from 'vue';
+import dropdownSelect from '../ui/dropdownSelect.vue'
 const emit = defineEmits(['chercher'])
-
+const props = defineProps(['typeBien', 'typeBati'])
 const rechercheData = reactive({
     piecesMin: null,
     picesMax: null,
@@ -35,6 +46,8 @@ const rechercheData = reactive({
     surfaceMax: null,
     prixMin: null,
     prixMax: null,
+    typeBien: null,
+    typeBati: null
 })
 
 function chercher() {

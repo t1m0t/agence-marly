@@ -17,7 +17,7 @@ const props = defineProps(["class", "items", "defaultSelectText", 'startValue'])
 const emits = defineEmits(["update:modelValue"])
 const defaultSelect = ref(props.defaultSelectText)
 const selectRefs = ref([])
-const noSelect = ref()
+const noSelect = ref(null)
 
 if (defaultSelect.value === undefined) defaultSelect.value = '-- Selection --'
 
@@ -26,9 +26,14 @@ function onChanged(e) {
 }
 
 onMounted(() => {
-  for (let i = 0; i < props.items.length; i++) {
-    if (props.startValue === props.items[i]) selectRefs.value[i].selected = true
-  }
+  if (props.startValue !== undefined) {
+    for (let i = 0; i < props.items.length; i++) {
+      if (props.startValue === props.items[i]) {
+        selectRefs.value[i].selected = true
+        break
+      }
+    }
+  } else noSelect.value.selected = true
 })
 
 </script>

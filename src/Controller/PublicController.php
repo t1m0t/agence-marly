@@ -96,12 +96,14 @@ class PublicController extends AbstractController
         }
         $paginationData = [
             'pages' => round($baseData['maxResult'] / $resultsPerPage),
-            'baseUrl' => $request->getPathInfo()
+            'baseUrl' => $request->getPathInfo(),
         ];
 
         return $this->json([
             'data' => $results,
-            'pagination' => $paginationData
+            'pagination' => $paginationData,
+            'type_bien' => Bien::TYPES,
+            'type_bati' => Bien::TYPES_BATI
         ], Response::HTTP_ACCEPTED, [], ['groups' => 'bien']);
     }
 }
