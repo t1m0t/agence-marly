@@ -6,10 +6,10 @@ use App\Entity\Bien;
 use App\Entity\PhotoBien;
 use App\Entity\RendezVous;
 use App\Entity\User;
+use App\Repository\PhotoBienRepository;
 use App\Repository\RendezVousRepository;
 use App\Repository\UserRepository;
 use App\Service\ForgeCookie;
-use App\Utils\UploadedBase64File;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,6 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -124,29 +125,28 @@ class PrivateController extends AbstractController
     public function postEditBien(int $id, ManagerRegistry $doctrine, Request $request, ValidatorInterface $validator): Response
     {
         try {
-            $content = $request->request->all();
+            $content = json_decode($request->getContent());
             $em =  $doctrine->getManager();
             $bien = $doctrine->getRepository(Bien::class)->find($id);
-            if ($content['adresse'] !== null) $bien->setAdresse($content['adresse']);
-            if ($content['type'] !== null) $bien->setType($content['type']);
-            if ($content['prix'] !== null) $bien->setPrix($content['prix']);
-            if ($content['surface'] !== null) $bien->setSurface($content['surface']);
-            if ($content['carrez'] !== null) $bien->setCarrez($content['carrez']);
-            if ($content['estVendu'] !== null) $bien->setEstVendu($content['estVendu']);
-            if ($content['titre'] !== null) $bien->setTitre($content['titre']);
-            if ($content['description'] !== null) $bien->setDescription($content['description']);
-            if ($content['typeBien'] !== null) $bien->setTypeBien($content['typeBien']);
-            if ($content['estVendu'] !== null) $bien->setEstVendu($content['estVendu'] === 'Oui' ? true : false);
-            /* if ($content['photosBien'] !== null) {
-                foreach ($content['photosBien'] as $photo) {
-                    $newPhoto = new PhotoBien();
-                    if ($photo->est_principale === true) $newPhoto->setEstPrincipale(true);
-                    $file = new UploadedBase64File($photo->file, 'test');
-                    dd($file);
-                    $file = $photo->file;
-                    $photo->setFileName() 
+            if ($content->adresse !== null) $bien->setAdresse($content->adresse);
+            if ($content->type !== null) $bien->setType($content->type);
+            if ($content->prix !== null) $bien->setPrix($content->prix);
+            if ($content->surface !== null) $bien->setSurface($content->surface);
+            if ($content->carrez !== null) $bien->setCarrez($content->carrez);
+            if ($content->titre !== null) $bien->setTitre($content->titre);
+            if ($content->description !== null) $bien->setDescription($content->description);
+            if ($content->typeBien !== null) $bien->setTypeBien($content->typeBien);
+            if ($content->estVendu !== null) $bien->setEstVendu($content->estVendu === 'Oui' ? true : false);
+            if ($content->photosBien !== null) {
+                foreach ($content->photosBien as $photo) {
+                    $editPhoto = $doctrine->getRepository(PhotoBien::class)->find($photo->id);
+                    dd($editPhoto);
+                    if ($photo->est_principale === true) $editPhoto->setEstPrincipale(true);
+                    else $editPhoto->setEstPrincipale(false);
+                    $em->persist($editPhoto);
+                    $em->flush();
                 }
-            } */
+            }
 
             $errors = $validator->validate($bien);
             if (count($errors) > 0) {
@@ -157,13 +157,11 @@ class PrivateController extends AbstractController
             } else {
                 $em->persist($bien);
                 $em->flush();
-                return $this->json([
-                    'message' => 'bien créé avec succès',
-                ], Response::HTTP_CREATED);
+                return new RedirectResponse('/api/bien/' . $id);
             }
         } catch (Exception $e) {
             return $this->json([
-                'message' => 'échec de la prise de rendez-vous',
+                'message' => 'échec de l\'enregistrement du bien',
                 'erreur' => $e
             ], Response::HTTP_SERVICE_UNAVAILABLE);
         }
@@ -193,8 +191,8 @@ class PrivateController extends AbstractController
 
             return $this->json([
                 'message' => 'Image ajoutée avec succés',
-                'photoBien' => $photoBien
-            ], Response::HTTP_CREATED, [], ['groups' => 'photoBien', 'bien']);
+                'photoBien' => $bien->getPhotoBiens()
+            ], Response::HTTP_CREATED, [], ['groups' => 'bien']);
         } catch (FileException $e) {
             return $this->json([
                 'message' => 'Echec de l\'ajout de l\'image',
@@ -203,8 +201,17 @@ class PrivateController extends AbstractController
         }
     }
 
-    #[Route('/supprimer-photo/{id}', methods: ["POST"])]
-    public function supprimerPhoto(int $id)
+    #[Route('/supprimer-photo', methods: ["POST"])]
+    public function supprimerPhoto(ManagerRegistry $doctrine, Request $request, PhotoBienRepository $photoRepo)
     {
+        $content = json_decode($request->getContent());
+        $photo = $doctrine->getRepository(PhotoBien::class)->find($content->id);
+        $bien = $photo->getBien();
+        $photoRepo->remove($photo, true);
+
+        return $this->json([
+            'message' => 'Image supprimée avec succés',
+            'photoBien' => $bien->getPhotoBiens()
+        ], Response::HTTP_OK, [], ['groups' => 'bien']);
     }
 }

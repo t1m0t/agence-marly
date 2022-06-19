@@ -36,7 +36,7 @@
                         <div class="control">
                             <label class="label">{{ fields.est_vendu.label }}</label>
                             <dropdownSelect :items="fields.est_vendu.items" v-model="fields.est_vendu.val"
-                                :startValue="fields.est_vendu.val" class="select" />
+                                :startValue="fields.est_vendu.val === true ? 'Oui' : 'Non'" class="select" />
                         </div>
                     </div>
 
@@ -64,9 +64,17 @@
                         <label class="label">{{ fields.photos_bien.label }}</label>
                         <div v-if="fields.photos_bien.val.length > 0">
                             <div class="liste-photo" v-for="(photo, index) in fields.photos_bien.val">
-                                <img :src="'/images/' + photo.fileName" alt="" ref="photosRefs">
-                                <button @click.prevent="supprimerPhoto(index)" v-if="photo.url !== null"
-                                    class="button is-danger">Supprimer</button>
+                                <div class="box">
+                                    <img :src="'/images/' + photo.fileName" alt="" ref="photosRefs">
+                                    <button @click.prevent="supprimerPhoto(index)" v-if="photo.url !== null"
+                                        class="button is-danger">Supprimer</button>
+                                    <p>C'est la photo principale ? {{ fields.photos_bien.val[index].estPrincipale ===
+                                            true ? 'Oui' : 'Non'
+                                    }}
+                                    </p>
+                                    <button @click.prevent="photoPrincipale(index)" v-if="photo.url !== null"
+                                        class="button is-primary">Photo principale</button>
+                                </div>
                             </div>
                         </div>
 
@@ -78,7 +86,7 @@
                                     <button v-if="photo.file !== null" class="button is-primary"
                                         @click.prevent="envoyerImage()">Envoyer</button>
                                     <button v-if="photo.file !== null" class="button is-danger"
-                                        @click.prevent="deleteImage()">Supprimer</button>
+                                        @click.prevent="deleteImage()">Annuler</button>
                                     <span v-else class="file-cta">
                                         <span class="file-label is-info">
                                             Ajouter
@@ -124,17 +132,6 @@ const photoAajouter = ref(null)
 
 onBeforeMount(async () => {
     await setFeedData()
-    console.log(feed.value)
-    fields.photos_bien.val = feed.value.photos
-    fields.adresse.val = feed.value.data.adresse
-    fields.carrez.val = getCarrez(feed.value.data.carrez)
-    fields.description.val = feed.value.data.description
-    fields.est_vendu.val = feed.value.data.estVendu
-    fields.prix.val = feed.value.data.prix
-    fields.surface.val = feed.value.data.surface
-    fields.titre.val = feed.value.data.titre
-    fields.type.val = feed.value.data.type
-    fields.type_bien.val = feed.value.data.typeBien
 })
 
 function getCarrez(carrez) {
@@ -145,7 +142,17 @@ function getCarrez(carrez) {
 async function setFeedData() {
     const reponse = await axios.get('/api/bien/' + route.params.id)
     feed.value = reponse.data
-    console.log(reponse.data)
+    fields.photos_bien.val = feed.value.photos
+    fields.adresse.val = feed.value.data.adresse
+    fields.carrez.val = getCarrez(feed.value.data.carrez)
+    fields.description.val = feed.value.data.description
+    fields.est_vendu.val = feed.value.data.est_vendu
+    fields.prix.val = feed.value.data.prix
+    fields.surface.val = feed.value.data.surface
+    fields.titre.val = feed.value.data.titre
+    fields.type.val = feed.value.data.type
+    fields.type_bien.val = feed.value.data.typeBien
+    console.log(fields.photos_bien.val)
 }
 
 async function deleteImage() {
@@ -166,7 +173,7 @@ async function submit() {
         titre: fields.titre.val,
         type: fields.type.val,
         typeBien: fields.type_bien.val,
-        //photosBien: fields.photos_bien.val
+        photosBien: fields.photos_bien.val
     };
 
     if (error.is === false) {
@@ -178,9 +185,9 @@ async function submit() {
         if (res.status === 503 || res.status === 422) {
             error.is = true
             error.message = "Echec de traitement de la requete."
-        } else if (res.status === 201) {
-            router.push('/app/gestion-biens')
         }
+
+        await setFeedData()
     }
 }
 
@@ -188,12 +195,14 @@ async function envoyerImage() {
     const formData = new FormData();
     formData.append('photo', photo.file.original)
     try {
-        await axios.post('/app/ajouter-photo/' + route.params.id, formData, {
+        const resp = await axios.post('/app/ajouter-photo/' + route.params.id, formData, {
             headers: {
                 'content-type': 'multipart/form-data'
             }
         })
+        fields.photos_bien.val = resp.data.photoBien
         photo = photoModel
+        deleteImage()
     } catch (e) {
         console.log(e)
         error.is = true
@@ -203,19 +212,18 @@ async function envoyerImage() {
 
 async function supprimerPhoto(index) {
     try {
-        await axios.post('/app/supprimer-photo/', {
-            photo: fields.photos_bien.val[index]
+        const resp = await axios.post('/app/supprimer-photo', {
+            id: fields.photos_bien.val[index].id
         }, {
             headers: {
                 'content-type': 'application/json'
             }
         })
-        fields.photos_bien.val.splice(index, 1)
-        photosRefs.value[index].remove()
+        fields.photos_bien.val = resp.data.photoBien
     } catch (e) {
         console.log(e)
         error.is = true
-        error.message = "Echec de suppressionde la photo."
+        error.message = "Echec de suppression de la photo."
     }
 }
 
@@ -251,5 +259,12 @@ function checkFieldsValid() {
         }
     })
     if (fields.photos_bien.val.length > 0) fields.photos_bien.val.pop()
+}
+
+function photoPrincipale(index) {
+    fields.photos_bien.val.forEach((photo, idx) => {
+        if (idx === index) photo.estPrincipale = true
+        else photo.estPrincipale = false
+    })
 }
 </script>
